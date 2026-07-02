@@ -35,6 +35,7 @@ export { default as PositronickMark } from './components/PositronickMark.svelte'
 export { default as ProgressBar } from './components/ProgressBar.svelte';
 export { default as Prose } from './components/Prose.svelte';
 export { default as ProviderIcon } from './components/ProviderIcon.svelte';
+export { default as RainBackdrop } from './components/RainBackdrop.svelte';
 export { default as RecDot } from './components/RecDot.svelte';
 export { default as ScrollTopButton } from './components/ScrollTopButton.svelte';
 export { default as SectionNav } from './components/SectionNav.svelte';
