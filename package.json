@@ -1,6 +1,6 @@
 {
 	"name": "@positronick/ui",
-	"version": "0.6.0",
+	"version": "0.7.0",
 	"description": "A Svelte 5 component library and design system styled after The Machine and Samaritan from Person of Interest. One component set, two runtime-switchable themes.",
 	"author": "Nicholas Sollazzo (https://nsollazzo.com)",
 	"license": "MIT",
