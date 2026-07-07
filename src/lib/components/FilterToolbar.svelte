@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { reducedMotion } from '../actions/reducedMotion.js';
+	import { motionSafe } from '../actions/motion.js';
 
 	interface Props {
 		/** Search text (two-way bindable). Escape clears it. */
@@ -44,7 +44,7 @@
 
 	let inputEl = $state<HTMLInputElement>();
 
-	const slideParams = $derived(reducedMotion.current ? { duration: 0 } : { duration: 140 });
+	const slideParams = $derived(motionSafe({ duration: 140 }));
 
 	// The shortcut focuses search from anywhere on the page — a nod to the
 	// terminal identity — but must never fire while the user is typing elsewhere.
