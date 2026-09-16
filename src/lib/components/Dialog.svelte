@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { useOverlayTheme } from '../theme/context.js';
+	import { useModalDialog } from '../actions/modalDialog.svelte.js';
 
 	interface Props {
 		/** Open state (two-way bindable). */
@@ -37,38 +38,15 @@
 
 	const titleId = $props.id();
 	let dialog = $state<HTMLDialogElement | null>(null);
-	let previouslyFocused: HTMLElement | null = null;
 
-	// Drive the native dialog imperatively. We never set the `open` attribute in
-	// markup; showModal() reflects it, puts the dialog in the top layer, and adds
-	// a focus trap + inert background.
-	$effect(() => {
-		const d = dialog;
-		if (!d) return;
-		if (open && !d.open) {
-			previouslyFocused = document.activeElement as HTMLElement | null;
-			d.showModal();
-		} else if (!open && d.open) {
-			d.close();
-		}
+	// Native modal wiring (showModal/close, single-dismissal `close` event, focus
+	// save/restore) is shared with <Sheet> — see useModalDialog.
+	const { handleClose } = useModalDialog({
+		dialog: () => dialog,
+		open: () => open,
+		setOpen: (v) => (open = v),
+		onclose: () => onclose
 	});
-
-	// If the dialog is unmounted while still open, the native `close` event never
-	// fires, so handleClose() never runs — restore focus on teardown so it isn't
-	// stranded on a now-removed element.
-	$effect(() => () => {
-		if (previouslyFocused?.isConnected) previouslyFocused.focus({ preventScroll: true });
-	});
-
-	// The single source of truth for closing is the native `close` event; every
-	// dismissal path (Escape, backdrop click, open=false) routes through d.close()
-	// so this fires exactly once. Sync the binding, notify, and restore focus.
-	function handleClose() {
-		open = false;
-		onclose?.();
-		if (previouslyFocused?.isConnected) previouslyFocused.focus({ preventScroll: true });
-		previouslyFocused = null;
-	}
 </script>
 
 <dialog

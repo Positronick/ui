@@ -97,6 +97,52 @@ describe('Dialog', () => {
 		expect(document.querySelector('dialog.pn-dialog')!.getAttribute('data-theme')).toBeNull();
 	});
 
+	// --- Focus save/restore (owned by useModalDialog, shared with Sheet) ---
+	// Pinned here per POS-75: the a11y-critical focus logic was centralized so a
+	// future fix can't land in one component and not the other — that guarantee
+	// only holds if the centralized behavior is test-pinned. Render closed and open
+	// via rerender so the controller captures a real opener as document.activeElement
+	// (rendering open from the start would capture <body>, not an opener).
+
+	test('restores focus to the opener when closed', async () => {
+		const opener = document.createElement('button');
+		document.body.appendChild(opener);
+		opener.focus();
+		expect(document.activeElement).toBe(opener);
+
+		const screen = render(Dialog, { open: false, title: 'T', children: body });
+		await screen.rerender({ open: true, title: 'T', children: body });
+
+		const el = document.querySelector('dialog.pn-dialog') as HTMLDialogElement;
+		await expect.poll(() => el.open).toBe(true);
+		// showModal() pulls focus into the top layer, off the opener…
+		expect(document.activeElement).not.toBe(opener);
+
+		el.close(); // native close — the single dismissal path
+		// …and the close handler returns focus to whoever opened the overlay.
+		await expect.poll(() => document.activeElement).toBe(opener);
+		opener.remove();
+	});
+
+	test('restores focus on teardown while still open (native close never fires)', async () => {
+		const opener = document.createElement('button');
+		document.body.appendChild(opener);
+		opener.focus();
+
+		const screen = render(Dialog, { open: false, title: 'T', children: body });
+		await screen.rerender({ open: true, title: 'T', children: body });
+
+		const el = document.querySelector('dialog.pn-dialog') as HTMLDialogElement;
+		await expect.poll(() => el.open).toBe(true);
+		expect(document.activeElement).not.toBe(opener);
+
+		// Unmounting an open <dialog> never fires the native `close` event, so focus
+		// restore must come from the $effect cleanup branch — assert it still runs.
+		await screen.unmount();
+		await expect.poll(() => document.activeElement).toBe(opener);
+		opener.remove();
+	});
+
 	// Polarity inversion alone is the dialog's figure-ground cue — no neon glow,
 	// even when the inverted surface is Machine-themed.
 	test('no glow in either polarity', () => {

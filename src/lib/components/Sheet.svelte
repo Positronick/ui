@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { useOverlayTheme } from '../theme/context.js';
+	import { useModalDialog } from '../actions/modalDialog.svelte.js';
 
 	interface Props {
 		/** Open state (two-way bindable). */
@@ -37,31 +38,15 @@
 
 	const titleId = $props.id();
 	let dialog = $state<HTMLDialogElement | null>(null);
-	let previouslyFocused: HTMLElement | null = null;
 
-	$effect(() => {
-		const d = dialog;
-		if (!d) return;
-		if (open && !d.open) {
-			previouslyFocused = document.activeElement as HTMLElement | null;
-			d.showModal();
-		} else if (!open && d.open) {
-			d.close();
-		}
+	// Native modal wiring (showModal/close, single-dismissal `close` event, focus
+	// save/restore) is shared with <Dialog> — see useModalDialog.
+	const { handleClose } = useModalDialog({
+		dialog: () => dialog,
+		open: () => open,
+		setOpen: (v) => (open = v),
+		onclose: () => onclose
 	});
-
-	// Restore focus on teardown if unmounted while open (no native `close` fires).
-	$effect(() => () => {
-		if (previouslyFocused?.isConnected) previouslyFocused.focus({ preventScroll: true });
-	});
-
-	// Closing always routes through the native `close` event so this fires once.
-	function handleClose() {
-		open = false;
-		onclose?.();
-		if (previouslyFocused?.isConnected) previouslyFocused.focus({ preventScroll: true });
-		previouslyFocused = null;
-	}
 </script>
 
 <dialog
