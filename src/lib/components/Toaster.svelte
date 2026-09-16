@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { fly, fade } from 'svelte/transition';
 	import { reducedMotion } from '../actions/reducedMotion.js';
+	import { motionSafe } from '../actions/motion.js';
 	import { useOverlayTheme } from '../theme/context.js';
 	import { store, remove, type ToastItem } from '../toast/store.svelte.js';
 
@@ -23,8 +24,8 @@
 	const overlayTheme = useOverlayTheme(() => invert);
 
 	// Motion is opt-out under prefers-reduced-motion.
-	const inParams = $derived(reducedMotion.current ? { duration: 0 } : { y: -8, duration: 300 });
-	const outParams = $derived(reducedMotion.current ? { duration: 0 } : { duration: 300 });
+	const inParams = $derived(motionSafe({ y: -8, duration: 300 }));
+	const outParams = $derived(motionSafe({ duration: 300 }));
 
 	// Decorative default glyphs so level is not signalled by color alone (WCAG 1.4.1).
 	const glyphs: Record<ToastItem['level'], string> = {
