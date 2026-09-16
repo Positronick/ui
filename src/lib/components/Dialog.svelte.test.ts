@@ -49,6 +49,55 @@ describe('Dialog', () => {
 		expect(closed).toBe(1);
 	});
 
+	// Focus save/restore lives in the shared useModalDialog controller (Dialog and
+	// Sheet both delegate to it), so pinning it via one overlay guards both — the
+	// a11y branches the dedup exists to protect.
+	//
+	// The close path below locks the end-to-end contract, but note Chromium's native
+	// modal-<dialog> already returns focus to the opener on close(), so it also passes
+	// if the helper's own restore is removed. The teardown test is the one that
+	// isolates helper-only logic: on unmount-while-open the native `close` never fires,
+	// so *only* the $effect cleanup can restore focus.
+	test('restores focus to the opener when it closes', async () => {
+		const opener = document.createElement('button');
+		document.body.appendChild(opener);
+		opener.focus();
+		expect(document.activeElement).toBe(opener); // captured as previouslyFocused on open
+
+		render(ThemedHarness, {
+			theme: 'machine',
+			Comp: Dialog,
+			componentProps: { open: true, title: 'T', children: body }
+		});
+		const el = document.querySelector('dialog.pn-dialog') as HTMLDialogElement;
+		expect(el.open).toBe(true); // showModal() moved focus into the dialog
+
+		el.close(); // native close — same path Escape/backdrop take
+		await expect.poll(() => document.activeElement).toBe(opener);
+
+		opener.remove();
+	});
+
+	test('restores focus when unmounted while still open (teardown branch)', async () => {
+		const opener = document.createElement('button');
+		document.body.appendChild(opener);
+		opener.focus();
+		expect(document.activeElement).toBe(opener);
+
+		const { unmount } = render(ThemedHarness, {
+			theme: 'machine',
+			Comp: Dialog,
+			componentProps: { open: true, title: 'T', children: body }
+		});
+		const el = document.querySelector('dialog.pn-dialog') as HTMLDialogElement;
+		expect(el.open).toBe(true); // still open — native `close` never fires on teardown
+
+		await unmount(); // $effect cleanup restores focus in lieu of handleClose
+		await expect.poll(() => document.activeElement).toBe(opener);
+
+		opener.remove();
+	});
+
 	test('a titleless dialog is named by aria-label', async () => {
 		const screen = render(ThemedHarness, {
 			theme: 'machine',
