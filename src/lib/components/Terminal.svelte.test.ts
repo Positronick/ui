@@ -65,4 +65,46 @@ describe('Terminal', () => {
 		});
 		expect(document.querySelector('.pn-terminal__cursor')).toBeNull();
 	});
+
+	test('copy button is a 44x44 minimum tap target', () => {
+		render(ThemedHarness, {
+			theme: 'machine',
+			Comp: Terminal,
+			componentProps: { children: content }
+		});
+		const button = document.querySelector('.pn-terminal__copy') as HTMLElement;
+		const rect = button.getBoundingClientRect();
+		expect(rect.width).toBeGreaterThanOrEqual(44);
+		expect(rect.height).toBeGreaterThanOrEqual(44);
+	});
+
+	test('copy button renders a glyph-free inline icon, never the U+29C9 tofu character', () => {
+		render(ThemedHarness, {
+			theme: 'machine',
+			Comp: Terminal,
+			componentProps: { children: content }
+		});
+		const button = document.querySelector('.pn-terminal__copy') as HTMLElement;
+		// Fonts without U+29C9 render it as tofu; the button must carry no text glyph at all —
+		// only an inline SVG icon, which inherits color via currentColor on fonts and non-fonts alike.
+		expect(button.textContent).not.toContain('⧉');
+		expect(button.querySelector('svg')).not.toBeNull();
+	});
+
+	test('the copied icon swaps to a check mark, still with no text glyph', async () => {
+		const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
+		const screen = render(ThemedHarness, {
+			theme: 'machine',
+			Comp: Terminal,
+			componentProps: { children: content }
+		});
+		const button = screen.getByRole('button', { name: 'Copy command' });
+		await button.click();
+		await vi.waitFor(() => expect(writeText).toHaveBeenCalled());
+		const el = document.querySelector('.pn-terminal__copy[data-copied]') as HTMLElement;
+		expect(el).not.toBeNull();
+		expect(el.textContent?.trim()).toBe('');
+		expect(el.querySelector('svg')).not.toBeNull();
+		writeText.mockRestore();
+	});
 });

@@ -41,7 +41,34 @@
 			aria-label={copied ? 'Copied' : 'Copy command'}
 			onclick={copy}
 		>
-			<span aria-hidden="true">{copied ? '✓' : '⧉'}</span>
+			{#if copied}
+				<svg
+					class="ico"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M5 12l5 5L20 7" />
+				</svg>
+			{:else}
+				<svg
+					class="ico"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<rect x="8" y="8" width="12" height="12" rx="2" />
+					<path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+				</svg>
+			{/if}
 		</button>
 	{/if}
 	<div class="pn-terminal__line">
@@ -69,8 +96,9 @@
 	}
 
 	.pn-terminal__line {
-		/* Reserve room on the right so a wrapping command never collides with the copy button. */
-		padding-right: var(--pn-space-6);
+		/* Reserve room on the right so a wrapping command never collides with the 44px copy
+		   button (its width plus a gap), not just its 16px icon. */
+		padding-right: calc(44px + var(--pn-space-3));
 	}
 	.pn-terminal__sigil {
 		margin-right: var(--pn-space-2);
@@ -94,18 +122,24 @@
 		position: absolute;
 		top: var(--pn-space-2);
 		right: var(--pn-space-2);
+		box-sizing: border-box;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		padding: var(--pn-space-1);
+		min-width: 44px;
+		min-height: 44px;
+		padding: 0;
 		background: transparent;
 		color: var(--pn-ink);
 		border: none;
-		font-family: var(--pn-font-mono);
-		font-size: var(--pn-font-size-2);
-		line-height: 1;
 		cursor: pointer;
+		touch-action: manipulation;
+		-webkit-tap-highlight-color: transparent;
 		transition: color 0.15s var(--pn-ease);
+	}
+	.pn-terminal__copy .ico {
+		width: 1rem;
+		height: 1rem;
 	}
 	.pn-terminal__copy:hover {
 		color: var(--pn-accent);

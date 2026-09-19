@@ -11,11 +11,23 @@
 		label: string;
 		/** Accessible name for the trigger (defaults to `label`). */
 		ariaLabel?: string;
+		/** Menu edge alignment relative to the trigger. `'end'` (default) grows the
+		 *  menu leftward from the trigger's right edge — the original behaviour.
+		 *  `'start'` grows it rightward from the trigger's left edge, for triggers
+		 *  near a container's right-hand clip edge. */
+		align?: 'start' | 'end';
 		/** Extra class(es) forwarded to the wrapper. */
 		class?: string;
 	}
 
-	let { value = $bindable(), options, label, ariaLabel, class: className = '' }: Props = $props();
+	let {
+		value = $bindable(),
+		options,
+		label,
+		ariaLabel,
+		align = 'end',
+		class: className = ''
+	}: Props = $props();
 
 	let open = $state(false);
 	let root = $state<HTMLDivElement>();
@@ -77,7 +89,7 @@
 	</Chip>
 
 	{#if open}
-		<div class="pn-dropdown__menu" id={menuId}>
+		<div class="pn-dropdown__menu" class:pn-dropdown__menu--start={align === 'start'} id={menuId}>
 			<button
 				type="button"
 				class="pn-dropdown__item"
@@ -119,6 +131,10 @@
 		background: var(--pn-surface-base);
 		border: var(--pn-hairline-width) solid var(--pn-line);
 		border-radius: var(--pn-radius);
+	}
+	.pn-dropdown__menu--start {
+		left: 0;
+		right: auto;
 	}
 	.pn-dropdown__item {
 		padding: var(--pn-space-2) var(--pn-space-3);
