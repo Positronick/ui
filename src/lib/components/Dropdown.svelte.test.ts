@@ -124,4 +124,36 @@ describe('Dropdown', () => {
 		await expect.poll(() => document.querySelector('.pn-dropdown__menu')).toBeNull();
 		expect(document.activeElement).toBe(document.querySelector('.pn-dropdown .pn-chip'));
 	});
+
+	test('defaults to right-aligned (align="end"), unchanged from prior behaviour', async () => {
+		const screen = render(ThemedHarness, {
+			theme: 'machine',
+			Comp: Dropdown,
+			componentProps: props()
+		});
+		await screen.getByRole('button', { name: 'Framework' }).click();
+		// Right-aligned: the menu's right edge sits flush with the trigger's right edge,
+		// so the menu grows LEFTWARD from the trigger.
+		const trigger = document.querySelector('.pn-dropdown .pn-chip') as HTMLElement;
+		const menu = document.querySelector('.pn-dropdown__menu') as HTMLElement;
+		expect(menu.getBoundingClientRect().right).toBeCloseTo(
+			trigger.getBoundingClientRect().right,
+			0
+		);
+	});
+
+	test('align="start" opens the menu from the left edge, not the right', async () => {
+		const screen = render(ThemedHarness, {
+			theme: 'machine',
+			Comp: Dropdown,
+			componentProps: { ...props(), align: 'start' }
+		});
+		await screen.getByRole('button', { name: 'Framework' }).click();
+		// Left-aligned: the menu's left edge sits flush with the trigger's left edge,
+		// so the menu grows RIGHTWARD from the trigger — reachable inside a scroll
+		// container that clips inline-start overflow (see brand.css consumer note).
+		const trigger = document.querySelector('.pn-dropdown .pn-chip') as HTMLElement;
+		const menu = document.querySelector('.pn-dropdown__menu') as HTMLElement;
+		expect(menu.getBoundingClientRect().left).toBeCloseTo(trigger.getBoundingClientRect().left, 0);
+	});
 });

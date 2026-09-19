@@ -1,5 +1,13 @@
 # @positronick/ui
 
+## 0.8.0
+
+### Minor Changes
+
+- feat: `Dropdown` gets an `align="start" | "end"` prop (default `"end"`, unchanged behaviour) so a menu near a container's right-hand clip edge can grow rightward instead of leftward into unreachable overflow.
+
+  fix: `Terminal`'s copy button is now a 44×44 minimum tap target and renders its icon as an inline `currentColor` SVG (copy / check) instead of the U+29C9 "⧉" text glyph, which rendered as tofu on fonts lacking that codepoint. `.pn-terminal__line` reserves `calc(44px + var(--pn-space-3))` so a wrapping command never collides with the larger button.
+
 ## 0.7.0
 
 ### Minor Changes
