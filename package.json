@@ -107,7 +107,7 @@
 		"@storybook/addon-vitest": "^10.4.1",
 		"@storybook/sveltekit": "^10.4.1",
 		"@sveltejs/adapter-static": "^3.0.10",
-		"@sveltejs/kit": "^2.57.0",
+		"@sveltejs/kit": "^3.0.0",
 		"@sveltejs/package": "^2.5.7",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@types/node": "^26",
